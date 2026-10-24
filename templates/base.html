@@ -1,0 +1,39 @@
+{% load static shop %}<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Плин — демонстраційний магазин одеської кавової обжарки. Кава у вашому темпі, доставка Україною та самовивіз в Одесі.">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#163c40">
+  <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false}'>
+  <meta property="og:title" content="Плин · кава у твоєму темпі">
+  <meta property="og:description" content="Демонстраційна одеська обжарка. Оберіть свою каву.">
+  <meta property="og:image" content="{% static 'images/hero-plyn-1600.webp' %}">
+  <title>{% block title %}Плин · кава у твоєму темпі{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body hx-history="false">
+<a class="skip-link" href="#main">Перейти до вмісту</a>
+<div class="demo-strip">Демонстраційний магазин Axon · оплата та доставка симулюються <a href="{% url 'demo' %}">Про демо ↗</a></div>
+<header class="site-header container">
+  <a class="wordmark" href="{% url 'home' %}" aria-label="Плин — головна">плин<span>ОДЕСЬКА ОБЖАРКА</span></a>
+  <nav class="main-nav" aria-label="Основна навігація">
+    <a href="{% url 'catalog' %}">Вся кава</a><a href="{% url 'content' 'about' %}">Про Плин</a><a href="{% url 'content' 'delivery' %}">Доставка й оплата</a>
+  </nav>
+  <div class="header-actions"><a href="{% url 'account' %}" aria-label="Особистий кабінет" class="icon-link"><svg aria-hidden="true"><use href="{% static 'images/icons.svg' %}#user"></use></svg><span class="desktop-only">Кабінет</span></a><a href="{% url 'cart' %}" class="cart-link"><svg aria-hidden="true"><use href="{% static 'images/icons.svg' %}#bag"></use></svg><span>Кошик</span><span class="cart-count">{{ cart_count }}</span></a></div>
+</header>
+{% if messages %}<div class="container messages" aria-live="polite">{% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+<main id="main">{% block content %}{% endblock %}</main>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div><a class="wordmark" href="{% url 'home' %}">плин<span>КАВА У ТВОЄМУ ТЕМПІ</span></a><p>Натхненні Одесою.<br>Створені для вашого ритуалу.</p><p class="small">Вигаданий бренд · проєкт Axon</p></div>
+    <div><h2>Зазирніть</h2><a href="{% url 'catalog' %}">Обрати каву</a><a href="{% url 'content' 'about' %}">Наша історія</a><a href="{% url 'content' 'delivery' %}">Доставка та оплата</a><a href="{% url 'content' 'returns' %}">Скасування й повернення</a></div>
+    <div><h2>Поруч, в Одесі</h2><p>Центр, вул. Кавових Мрій, 7<br><span class="small">Вигадана адреса · не для відвідування</span></p><a href="{% url 'content' 'contacts' %}">Про самовивіз ↗</a><a href="{% url 'demo' %}">Як працює демонстрація</a></div>
+  </div>
+  <div class="container footer-bottom"><span>© {% now 'Y' %} Плин / Axon. Демонстраційний магазин.</span><div><a href="{% url 'content' 'privacy' %}">Конфіденційність</a><a href="{% url 'content' 'terms' %}">Умови демо</a></div></div>
+</footer>
+</body></html>

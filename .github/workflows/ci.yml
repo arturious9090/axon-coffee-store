@@ -1,0 +1,35 @@
+name: Store checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: plyn
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: plyn
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U plyn"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      APP_ENV: local
+      DATABASE_URL: postgresql://plyn:ci-only-password@127.0.0.1:5432/plyn
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13", cache: pip}
+      - uses: actions/setup-node@v4
+        with: {node-version: "24", cache: npm}
+      - run: pip install -r requirements.txt
+      - run: npm ci
+      - run: npm run build
+      - run: ruff check . && ruff format --check .
+      - run: python manage.py check && python manage.py makemigrations --check --dry-run
+      - run: pytest -q --tb=short
+      - run: playwright install --with-deps chromium
+      - run: RUN_E2E=1 pytest tests/test_e2e.py -q --tb=short
+      - run: docker build -t plyn-coffee:ci .

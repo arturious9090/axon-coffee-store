@@ -1,0 +1,51 @@
+x-app: &app
+  image: plyn-coffee:local
+  build: .
+  environment: &app-env
+    APP_ENV: local
+    DEBUG: "0"
+    SECRET_KEY: ${SECRET_KEY:-local-demo-only-plyn-change-before-hosting}
+    DATABASE_URL: postgresql://plyn:${POSTGRES_PASSWORD:-local-demo-password}@db:5432/plyn
+    REDIS_URL: redis://redis:6379/0
+    CACHE_URL: redis://redis:6379/1
+    ALLOWED_HOSTS: localhost,127.0.0.1
+    SITE_URL: http://127.0.0.1:${WEB_PORT:-8000}
+    EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+    EMAIL_HOST: mail
+    EMAIL_PORT: "1025"
+    PAYMENT_PROVIDER: mock
+    SHIPPING_PROVIDER: mock
+  volumes: ["media_data:/app/data/media"]
+  depends_on:
+    db: {condition: service_healthy}
+    redis: {condition: service_healthy}
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+services:
+  web:
+    <<: *app
+    ports: ["127.0.0.1:${WEB_PORT:-8000}:8000"]
+    mem_limit: 768m
+  worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--concurrency=2"]
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping --timeout 5 | grep -q pong"]
+      interval: 60s
+      timeout: 15s
+      start_period: 30s
+  beat:
+    <<: *app
+    command: ["celery", "-A", "config", "beat", "--loglevel=INFO", "--schedule=/app/data/celerybeat"]
+    volumes: ["beat_data:/app/data"]
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /app/data/celerybeat"]
+      interval: 60s
+      timeout: 5s
+volumes:
+  media_data:
+  beat_data:

@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = ["postgres: requires PostgreSQL transaction semantics", "e2e: browser tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = ["store/migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

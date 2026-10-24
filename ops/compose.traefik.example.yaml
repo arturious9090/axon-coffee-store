@@ -1,0 +1,31 @@
+# Documentation template only. Nothing in this file has been applied to dev-server-pwa.
+# Use after separately authorizing a concrete deployment and resolving all variables.
+services:
+  db:
+    ports: !reset []
+  redis:
+    ports: !reset []
+  mail:
+    ports: !reset []
+  web:
+    ports: !reset []
+    environment:
+      APP_ENV: demo
+      DEBUG: "0"
+      SECRET_KEY: ${SECRET_KEY:?set a unique demo secret}
+      ALLOWED_HOSTS: ${SHOP_DOMAIN:?set the shop domain},127.0.0.1,localhost
+      SITE_URL: https://${SHOP_DOMAIN}
+      CSRF_TRUSTED_ORIGINS: https://${SHOP_DOMAIN}
+    networks: [default, shop_ingress]
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${TRAEFIK_NETWORK:?read the existing Traefik network name}
+      traefik.http.routers.plyn-demo.rule: Host(`${SHOP_DOMAIN}`)
+      traefik.http.routers.plyn-demo.entrypoints: ${TRAEFIK_ENTRYPOINT:?read existing HTTPS entrypoint name}
+      traefik.http.routers.plyn-demo.tls: "true"
+      traefik.http.routers.plyn-demo.tls.certresolver: ${TRAEFIK_RESOLVER:?read existing certificate resolver name}
+      traefik.http.services.plyn-demo.loadbalancer.server.port: "8000"
+networks:
+  shop_ingress:
+    external: true
+    name: ${TRAEFIK_NETWORK}

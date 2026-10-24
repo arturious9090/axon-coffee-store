@@ -1,0 +1,34 @@
+name: plyn-coffee
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: plyn
+      POSTGRES_USER: plyn
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-demo-password}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plyn"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 1g
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:56379:6379"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+  mail:
+    image: axllent/mailpit:v1.29
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
+    mem_limit: 128m
+volumes:
+  postgres_data:
+  redis_data:
